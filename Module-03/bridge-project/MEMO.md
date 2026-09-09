@@ -1,10 +1,4 @@
-SUPPLIER REVIEW · Thursday payment run · 7 suppliers · 8 lookups used
-
-## CONDITIONS — Almarai Company
-
-The sanctions screen shows no strong matches, but GLEIF returned no records, indicating a need for further verification of the supplier's legal status.
-
-**Next action:** Request a certificate of incorporation, LEI, or official registration number from Almarai Company before proceeding with payment.
+SUPPLIER REVIEW · Thursday payment run · 7 suppliers · 9 lookups used
 
 ## REJECT — Zorblax Trading FZE
 
@@ -12,9 +6,15 @@ The completed GLEIF and web checks found no trace from which a legal entity coul
 
 **Next action:** Do not release payment. Ask Procurement to provide a certificate of incorporation or official registration number before reconsideration.
 
+## REJECT — Almarai Company
+
+The completed GLEIF and web checks found no trace from which a legal entity could be established.
+
+**Next action:** Do not release payment. Ask Procurement to provide a certificate of incorporation or official registration number before reconsideration.
+
 ## APPROVE — Al Noor Cart Trading Company
 
-The sanctions screening did not reveal any strong matches, and the GLEIF lookup confirmed the supplier's active status with an exact name match.
+The sanctions screening did not yield any strong matches above the threshold, and the GLEIF lookup confirms the supplier's active status with an exact name match.
 
 **Next action:** Payment may be released.
 
@@ -26,9 +26,9 @@ The supplier has a name match at or above the 0.90 OFAC sanctions threshold. Rel
 
 ## CONDITIONS — Siemens AG
 
-Multiple legal entities found with no exact match for 'Siemens AG'.
+Multiple legal entities related to Siemens AG were found, but none matched exactly. We need to confirm the specific legal entity and its registration details.
 
-**Next action:** Request the LEI or registration number for the specific entity to confirm identity.
+**Next action:** Request the LEI or registration number for the specific entity being engaged.
 
 ## CONDITIONS — C & V Works ApS
 

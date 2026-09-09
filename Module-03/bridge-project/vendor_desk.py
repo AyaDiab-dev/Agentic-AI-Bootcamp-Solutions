@@ -55,6 +55,7 @@ llm = ChatOpenAI(
 # everyone, always; it does not come out of this budget.
 # Do not raise this number. Working inside it IS the project.
 MAX_LOOKUPS = 9
+MAX_SCREEN_STEPS = 3
 
 BUDGET = {"used": 0}
 
@@ -120,6 +121,22 @@ class Verdict(BaseModel):
     )
 )
 
+
+class ScreeningAction(BaseModel):
+    """The next action selected while screening one supplier."""
+
+    tool: Literal["gleif_lookup", "web_search", "finish"]
+    query: Optional[str] = Field(
+        default=None,
+        description=(
+            "The supplier name for gleif_lookup, or a concise search query "
+            "for web_search."
+        ),
+    )
+    reason: str = Field(
+        description="Why this is the best next action based on current evidence.",
+    )
+
 # ===========================================================================
 # 2 - THE STATE
 # ===========================================================================
@@ -135,9 +152,66 @@ class State(TypedDict):
     current_supplier: Optional[Supplier]      # Supplier currently being processed
     memo: Optional[str]                       # Final supplier review report
 
+
+class ScreeningState(TypedDict):
+    supplier: Supplier                        # The single supplier being screened
+    scratchpad: list[str]                     # Evidence collected so far
+    action: Optional[dict]                    # Next structured action
+    done: bool                                # Whether the ReAct loop should stop
+    steps_used: int                           # Protection against an endless loop
+    failure: Optional[str]                    # Honest record of an agent failure
+
 # ===========================================================================
 # 3 - YOUR NODES
 # ===========================================================================
+
+def fallback_plan(request: str) -> Plan:
+    """Recover the seven request lines if structured planning fails twice."""
+    supplier_blocks = re.findall(r"```\s*\n(.*?)```", request, flags=re.DOTALL)
+    supplier_text = next(
+        (block for block in supplier_blocks if "Maersk A/S" in block),
+        "",
+    )
+    matches = re.findall(
+        r"^\s*([^\n—]+?)\s+—\s+([^,\n]+),\s*([^\n]+?)\s*$",
+        supplier_text,
+        flags=re.MULTILINE,
+    )
+
+    suppliers = [
+        Supplier(
+            name=name.strip(),
+            business_type=business_type.strip(),
+            jurisdiction=jurisdiction.strip(),
+            priority=0,
+            priority_reason="Recovered from the request after planning failed.",
+        )
+        for name, business_type, jurisdiction in matches
+    ]
+
+    if not suppliers:
+        raise RuntimeError("The supplier list could not be recovered from REQUEST.md.")
+
+    def risk_key(supplier: Supplier) -> tuple[int, str]:
+        text = f"{supplier.name} {supplier.business_type}".lower()
+        ambiguous = any(
+            term in text
+            for term in ("trading", "general", "fze")
+        )
+        return (0 if ambiguous else 1, supplier.name.lower())
+
+    suppliers.sort(key=risk_key)
+
+    for priority, supplier in enumerate(suppliers, start=1):
+        supplier.priority = priority
+
+    return Plan(
+        ordered_suppliers=suppliers,
+        budget_strategy=(
+            "Structured planning failed twice. The request was recovered "
+            "deterministically, with ambiguous trading entities placed first."
+        ),
+    )
 
 def triage(state: State) -> State:
     """
@@ -173,10 +247,18 @@ Rules:
     try:
         plan = structured_llm.invoke(prompt)
     except Exception:
-        # Retry once if the model fails to return valid structured output.
-        plan = structured_llm.invoke(
-            prompt + "\nReturn a valid Plan matching the required schema exactly."
-        )
+        try:
+            # Retry once if the model fails to return valid structured output.
+            plan = structured_llm.invoke(
+                prompt + "\nReturn a valid Plan matching the required schema exactly."
+            )
+        except Exception:
+            # Preserve the run instead of losing all work to a malformed reply.
+            plan = fallback_plan(state["request"])
+
+    planned_names = [supplier.name for supplier in plan.ordered_suppliers]
+    if len(planned_names) != 7 or len(set(planned_names)) != 7:
+        plan = fallback_plan(state["request"])
 
     ordered_suppliers = sorted(
         plan.ordered_suppliers,
@@ -217,6 +299,155 @@ Rules:
     return state
 
 
+def screen_reason(state: ScreeningState) -> ScreeningState:
+    """Choose one next registry action for one supplier."""
+    supplier = state["supplier"]
+    observations = (
+        "\n\n".join(state["scratchpad"])
+        if state["scratchpad"]
+        else "Nothing collected yet"
+    )
+
+    prompt = f"""
+Screen exactly one supplier using a ReAct loop.
+
+SUPPLIER:
+Name: {supplier.name}
+Business type: {supplier.business_type}
+Jurisdiction: {supplier.jurisdiction}
+
+OBSERVATIONS SO FAR:
+{observations}
+
+Choose exactly one next action: gleif_lookup, web_search, or finish.
+
+Rules:
+- Never repeat a lookup already shown in the observations.
+- Normally use GLEIF first to establish the legal entity.
+- Use web_search only when GLEIF returned NO_RECORDS and another source is
+  needed to distinguish a real company from an entity with no trace.
+- NO_RECORDS is evidence; it is different from LOOKUP_UNAVAILABLE.
+- If GLEIF returned candidates, do not use web search merely to confirm them.
+- Finish when the evidence is sufficient for the decision node, when an
+  essential lookup was unavailable, or when no useful lookup remains.
+- Do not make the final APPROVE/CONDITIONS/REJECT/INSUFFICIENT verdict here.
+"""
+
+    structured_llm = llm.with_structured_output(ScreeningAction)
+
+    try:
+        chosen_action = structured_llm.invoke(prompt)
+    except Exception:
+        try:
+            chosen_action = structured_llm.invoke(
+                prompt + "\nReturn a valid ScreeningAction matching the schema exactly."
+            )
+        except Exception as error:
+            state["failure"] = f"Structured screening decision failed: {error}"
+            state["done"] = True
+            return state
+
+    state["action"] = chosen_action.model_dump()
+    return state
+
+
+def screen_act(state: ScreeningState) -> ScreeningState:
+    """Execute one selected registry action while enforcing the budget."""
+    action = state["action"]
+    supplier = state["supplier"]
+
+    if action is None:
+        state["failure"] = "No screening action was produced."
+        state["done"] = True
+        return state
+
+    state["steps_used"] += 1
+    tool = action["tool"]
+
+    if tool == "finish":
+        state["done"] = True
+
+        return state
+        if tool == "web_search":
+            gleif_has_no_records = any(
+            item.strip() == f"GLEIF LOOKUP:\n{NO_RECORDS}"
+            for item in state["scratchpad"]
+        )
+
+        if not gleif_has_no_records:
+            # Web evidence is useful only when GLEIF returned no candidates.
+            # Stop instead of spending budget on a redundant lookup.
+            state["done"] = True
+            return state
+
+    prefix = "GLEIF LOOKUP:" if tool == "gleif_lookup" else "WEB SEARCH:"
+    if any(item.startswith(prefix) for item in state["scratchpad"]):
+        state["failure"] = f"The agent attempted to repeat {tool}."
+        state["done"] = True
+        return state
+
+    if not spend(f"{tool}: {supplier.name}"):
+        state["scratchpad"].append(
+            f"{prefix}\nNOT_RUN_BUDGET_EXHAUSTED"
+        )
+        state["failure"] = "The lookup budget was exhausted."
+        state["done"] = True
+        return state
+
+    try:
+        if tool == "gleif_lookup":
+            result = gleif_lookup(supplier.name)
+        else:
+            query = action.get("query") or (
+                f"{supplier.name} {supplier.jurisdiction}"
+            )
+            result = web_search(query)
+    except Exception as error:
+        result = f"{LOOKUP_UNAVAILABLE}: {error}"
+
+    state["scratchpad"].append(f"{prefix}\n{result}")
+
+    if state["steps_used"] >= MAX_SCREEN_STEPS:
+        state["done"] = True
+
+    return state
+
+
+def screen_react_done(state: ScreeningState) -> str:
+    """Route the ReAct subgraph without mutating its state."""
+    if state["done"]:
+        return "end"
+
+    if state["steps_used"] >= MAX_SCREEN_STEPS:
+        return "end"
+
+    if BUDGET["used"] >= MAX_LOOKUPS:
+        return "end"
+
+    return "loop"
+
+
+def build_screening_react_graph():
+    """Compile the reused reason -> act -> observe loop for one supplier."""
+    graph = StateGraph(ScreeningState)
+    graph.add_node("reason", screen_reason)
+    graph.add_node("act", screen_act)
+    graph.set_entry_point("reason")
+    graph.add_edge("reason", "act")
+    graph.add_conditional_edges(
+        "act",
+        screen_react_done,
+        {
+            "loop": "reason",
+            "end": END,
+        },
+    )
+    return graph.compile()
+
+
+SCREENING_REACT_APP = build_screening_react_graph()
+
+
 def screen(state: State) -> State:
     """
     Gather evidence on the NEXT supplier in the queue.
@@ -247,36 +478,31 @@ def screen(state: State) -> State:
         # A strong sanctions match is already enough to stop further checks.
         return state
 
-    if not spend(f"GLEIF lookup: {supplier.name}"):
-        state["skipped"].append(supplier)
-        state["skipped"].extend(state["queue"])
-        state["queue"] = []
-        return state
-
-    gleif_result = gleif_lookup(supplier.name)
-
-    gleif_evidence = f"GLEIF LOOKUP:\n{gleif_result}"
-
-    state["current_evidence"].append(gleif_evidence)
-    state["evidence"].append(
-        (supplier.name, gleif_evidence)
+    starting_evidence_count = len(state["current_evidence"])
+    screening_result = SCREENING_REACT_APP.invoke(
+        {
+            "supplier": supplier,
+            "scratchpad": list(state["current_evidence"]),
+            "action": None,
+            "done": False,
+            "steps_used": 0,
+            "failure": None,
+        },
+        config={"recursion_limit": 12},
     )
 
-    if gleif_result == NO_RECORDS:
-        query = f"{supplier.name} {supplier.jurisdiction}"
+    state["current_evidence"] = screening_result["scratchpad"]
 
-        if spend(f"Web search: {supplier.name}"):
-            web_result = web_search(query)
-            web_evidence = f"WEB SEARCH:\n{web_result}"
+    for item in state["current_evidence"][starting_evidence_count:]:
+        state["evidence"].append((supplier.name, item))
 
-            state["current_evidence"].append(web_evidence)
-            state["evidence"].append(
-                (supplier.name, web_evidence)
-            )
-        else:
-            state["current_evidence"].append(
-                "WEB SEARCH: NOT_RUN_BUDGET_EXHAUSTED"
-            )
+    if screening_result.get("failure"):
+        failure_evidence = (
+            "SCREENING AGENT FAILURE:\n"
+            f"{screening_result['failure']}"
+        )
+        state["current_evidence"].append(failure_evidence)
+        state["evidence"].append((supplier.name, failure_evidence))
 
     return state
 
@@ -391,6 +617,39 @@ def decide(state: State) -> State:
         state["current_evidence"] = []
 
         return state
+
+    gleif_was_completed = any(
+        evidence.startswith("GLEIF LOOKUP:")
+        and "NOT_RUN_BUDGET_EXHAUSTED" not in evidence
+        and str(LOOKUP_UNAVAILABLE) not in evidence
+        for evidence in state["current_evidence"]
+    )
+
+    if not gleif_was_completed:
+        verdict = Verdict(
+            supplier=supplier.name,
+            verdict="INSUFFICIENT",
+            reason=(
+                "The supplier's legal identity could not be checked reliably "
+                "because the required GLEIF lookup was not completed."
+            ),
+            next_action=(
+                "Hold payment and complete the GLEIF lookup, or request the "
+                "supplier's LEI or official registration number."
+            ),
+        )
+
+        state["verdicts"].append(verdict)
+
+        print(f"\n{verdict.verdict}: {verdict.supplier}")
+        print(f"Reason: {verdict.reason}")
+        print(f"Next action: {verdict.next_action}")
+
+        state["current_supplier"] = None
+        state["current_evidence"] = []
+
+        return state
+
     prompt = f"""
 Review the retrieved evidence and make one actionable supplier decision.
 
@@ -450,10 +709,24 @@ General rules:
     try:
         verdict = structured_llm.invoke(prompt)
     except Exception:
-        verdict = structured_llm.invoke(
-            prompt
-            + "\nReturn a valid Verdict matching the required schema exactly."
-        )
+        try:
+            verdict = structured_llm.invoke(
+                prompt
+                + "\nReturn a valid Verdict matching the required schema exactly."
+            )
+        except Exception:
+            verdict = Verdict(
+                supplier=supplier.name,
+                verdict="INSUFFICIENT",
+                reason=(
+                    "The decision model failed twice, so the retrieved evidence "
+                    "could not be assessed reliably."
+                ),
+                next_action=(
+                    "Hold payment and have Compliance review the retrieved "
+                    "registry evidence manually."
+                ),
+            )
 
     # Keep the supplier name consistent with the original request.
     verdict.supplier = supplier.name

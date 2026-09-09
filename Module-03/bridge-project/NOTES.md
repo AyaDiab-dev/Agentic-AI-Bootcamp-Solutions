@@ -10,8 +10,7 @@ identity lookup would not have changed the decision.
 This preserved the limited budget for ambiguous suppliers such as Almarai
 Company and Zorblax Trading FZE, where GLEIF returned no records and a web
 search was needed to distinguish a real company from an entity with no
-verifiable trace. The final run used eight of the nine available lookups and
-still produced a verdict for all seven suppliers.
+verifiable trace. The final run used all nine available lookups and still produced a verdict for all seven suppliers. and still produced a verdict for all seven suppliers.
 
 ## B. What sanctions threshold did you set, and why?
 
