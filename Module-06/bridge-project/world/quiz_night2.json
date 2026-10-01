@@ -1,0 +1,91 @@
+{
+  "night": 2,
+  "about": "ten facts established by the PARTY on night 1 - none of them is in WORLD.md, so a game master that only knows the canon cannot answer",
+  "questions": [
+    {
+      "q": "Quick check before we start. What is my character's name? One word.",
+      "accept": [
+        "dax"
+      ],
+      "established": 1
+    },
+    {
+      "q": "What is my dog called? One word.",
+      "accept": [
+        "biscuit"
+      ],
+      "established": 1
+    },
+    {
+      "q": "What tone did I ask you to keep for this game? Quote me.",
+      "accept": [
+        "light",
+        "cosy",
+        "cozy",
+        "gore"
+      ],
+      "established": 1
+    },
+    {
+      "q": "What did I ask the smith to fix for me? One or two words.",
+      "accept": [
+        "wheel",
+        "cart"
+      ],
+      "established": 1
+    },
+    {
+      "q": "What did I buy from the herbalist, and from whom? Name the item and the person.",
+      "accept": [
+        "feverleaf"
+      ],
+      "established": 1
+    },
+    {
+      "q": "How many coppers did I pay for the feverleaf?",
+      "accept": [
+        "four",
+        "4"
+      ],
+      "established": 1
+    },
+    {
+      "q": "What did I promise Old Tobb the miller last time, and by when?",
+      "accept": [
+        "ledger"
+      ],
+      "established": 1
+    },
+    {
+      "q": "Did I take the amulet from the shrine, or leave it on the altar? Start your answer with 'took' or 'left'.",
+      "accept": [
+        "took",
+        "pocketed",
+        "taken"
+      ],
+      "reject": [
+        "left it",
+        "leave it",
+        "left the"
+      ],
+      "established": 1
+    },
+    {
+      "q": "Before bed on my first night I counted my things. Name two of them.",
+      "accept": [
+        "ledger",
+        "amulet",
+        "feverleaf"
+      ],
+      "established": 1
+    },
+    {
+      "q": "Who warned me about the bridge - a villager, or a traveller on the road?",
+      "accept": [
+        "traveller",
+        "traveler"
+      ],
+      "established": 1
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+# Module 6 bridge project - same environment as Module 6:
+#
+#     Module-06\.venv\Scripts\python.exe -m pip install -r Module-06\bridge-project\requirements.txt
+#     Module-06/.venv/bin/python -m pip install -r Module-06/bridge-project/requirements.txt
+
+chromadb>=1.0,<2          # the store, with built-in local embeddings (no second key)
+langchain-openai>=0.2.0   # ChatOpenAI via OpenRouter, same as M1-M6
+pydantic>=2.0             # the Fact schema for extraction
+python-dotenv>=1.0.0      # repo-root .env
+tiktoken>=0.7.0           # the short-term token budget, counted without an API call
