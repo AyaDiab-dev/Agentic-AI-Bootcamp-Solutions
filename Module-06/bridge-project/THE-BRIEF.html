@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bridge Project — The Campaign</title>
+<style>
+:root{--navy:#12314f;--blue:#0b6bcb;--sky:#eaf4fd;--ink:#1c2733;--mut:#5b6b7c;
+      --line:#dde5ee;--amber:#b7791f;--amberbg:#fdf6e3;--red:#c0392b;--redbg:#fdeeec;
+      --green:#1a7f4b;--greenbg:#eaf7f0;--purple:#6b3fa0;--purplebg:#f3edfa;}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+     color:var(--ink);background:#fff;line-height:1.55;font-size:16px}
+main{max-width:1280px;margin:0 auto;padding:24px 30px 90px}
+h1{font-size:31px;color:var(--navy);margin:0 0 2px}
+h2{font-size:23px;color:#fff;background:var(--navy);margin:40px 0 12px;padding:9px 16px;border-radius:8px}
+h3{font-size:18px;color:var(--navy);margin:22px 0 6px}
+.lede{font-size:17px;color:var(--mut);margin:0 0 18px}
+code{background:#f2f5f8;padding:2px 6px;border-radius:4px;font-size:14px;font-family:'Cascadia Code',Consolas,monospace;color:#a02050}
+pre{background:#10202e;color:#dfe8f0;padding:12px 15px;border-radius:8px;overflow-x:auto;margin:10px 0;font-size:13.5px;line-height:1.5}
+pre code{background:none;padding:0;color:#dfe8f0}
+pre .ok{color:#7fd8a0} pre .err{color:#ff8a80} pre .dim{color:#8fa3b5}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:15px}
+th{background:var(--navy);color:#fff;text-align:left;padding:8px 11px}
+td{border:1px solid var(--line);padding:8px 11px;vertical-align:top}
+tr:nth-child(even) td{background:#f8fafc}
+.box{border-radius:8px;padding:13px 17px;margin:14px 0;border-left:5px solid}
+.warn{background:var(--amberbg);border-color:var(--amber)}
+.good{background:var(--greenbg);border-color:var(--green)}
+.bad{background:var(--redbg);border-color:var(--red)}
+.ai{background:var(--purplebg);border-color:var(--purple)}
+svg{width:100%;height:auto;display:block;margin:6px 0 0}
+.step{display:flex;gap:14px;margin:14px 0;align-items:flex-start}
+.num{flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:16px}
+.step .bd{flex:1}
+.tag{display:inline-block;padding:1px 9px;border-radius:11px;font-size:12px;font-weight:700}
+.t-todo{background:var(--redbg);color:var(--red)}
+.t-given{background:var(--greenbg);color:var(--green)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin:16px 0}
+.card{border:2px solid var(--line);border-radius:10px;padding:0 0 15px;overflow:hidden;display:flex;flex-direction:column}
+.card .hd{padding:11px 16px;color:#fff;font-weight:800;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.card .bd{padding:13px 16px 0;flex:1}
+.card .why{margin:11px 16px 0;padding:9px 12px;border-radius:7px;font-size:14px;background:#f8fafc;border-left:4px solid var(--line)}
+.c1 .hd{background:#5b6b7c} .c1{border-color:#5b6b7c}
+.c2 .hd{background:#0b6bcb} .c2{border-color:#0b6bcb}
+.c3 .hd{background:#b7791f} .c3{border-color:#b7791f}
+.pill{background:rgba(255,255,255,.22);border-radius:20px;padding:2px 10px;font-size:12.5px}
+.big{background:var(--sky);border:2px solid var(--blue);border-radius:9px;padding:12px 18px;margin:18px 0;font-size:17px;color:var(--navy);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Bridge Project — The Campaign</h1>
+<p class="lede">Module 6 → Module 7. A game master with two memories. Keep this open while you build;
+the detail is in <code>README.md</code>.</p>
+
+<!-- ================= 1 ================= -->
+<h2>1 · The problem</h2>
+
+<p>You are running a tabletop game for one player, three nights, a week and then a month apart.
+Each night is fifteen to twenty turns — <b>more than any sane prompt should carry verbatim</b>. Between
+nights the process dies and the world moves: an NPC dies, a bridge burns, a promise is kept, and on
+night 3 the player says <i>"actually, that never happened."</i></p>
+
+<svg viewBox="0 0 1000 250" role="img" aria-label="Two memories, two timescales">
+  <rect x="15" y="20" width="470" height="140" rx="10" fill="#eaf4fd" stroke="#0b6bcb" stroke-width="2.5"/>
+  <text x="250" y="48" font-size="15" font-weight="800" text-anchor="middle" fill="#0b6bcb">SHORT-TERM · tonight</text>
+  <text x="250" y="74" font-size="13.5" text-anchor="middle" fill="#1c2733">recent turns verbatim + a rolling summary</text>
+  <text x="250" y="94" font-size="13.5" text-anchor="middle" fill="#1c2733">folded when a TOKEN BUDGET is exceeded</text>
+  <text x="250" y="114" font-size="13.5" text-anchor="middle" fill="#1c2733">dies with the process</text>
+  <text x="250" y="144" font-size="12.5" font-weight="700" text-anchor="middle" fill="#0b6bcb">"what happened tonight?"</text>
+
+  <rect x="515" y="20" width="470" height="140" rx="10" fill="#eaf7f0" stroke="#1a7f4b" stroke-width="2.5"/>
+  <text x="750" y="48" font-size="15" font-weight="800" text-anchor="middle" fill="#1a7f4b">LONG-TERM · the campaign</text>
+  <text x="750" y="74" font-size="13.5" text-anchor="middle" fill="#1c2733">typed, dated facts on disk, extracted by a model</text>
+  <text x="750" y="94" font-size="13.5" text-anchor="middle" fill="#1c2733">superseded when the world changes · forgotten on request</text>
+  <text x="750" y="114" font-size="13.5" text-anchor="middle" fill="#1c2733">survives every restart</text>
+  <text x="750" y="144" font-size="12.5" font-weight="700" text-anchor="middle" fill="#1a7f4b">"what is true about this campaign?"</text>
+
+  <rect x="15" y="180" width="970" height="56" rx="9" fill="#12314f"/>
+  <text x="500" y="203" font-size="14.5" font-weight="800" text-anchor="middle" fill="#fff">
+    The quiz at the start of a night is asked in a NEW process. Short-term is empty.
+  </text>
+  <text x="500" y="224" font-size="13.5" text-anchor="middle" fill="#dfe8f0">
+    Every right answer came from disk. Every wrong one is a policy you wrote — or did not.
+  </text>
+</svg>
+
+<div class="big">Both memories, at once, graded on both. A budget and a fold on one side; write, supersede,
+recall, forget on the other. And a number: a continuity quiz against a goldfish.</div>
+
+<!-- ================= 2 ================= -->
+<h2>2 · Three nights</h2>
+
+<div class="cards">
+  <div class="card c1">
+    <div class="hd"><span>Night 1 · 37 days ago</span><span class="pill">18 turns</span></div>
+    <div class="bd">
+      <p>Dax and his dog Biscuit arrive in the Hollow. <i>"Call me Dax, keep it light."</i> Meet
+         <b>Marra</b> the smith and <b>Mirra</b> the herbalist. Buy feverleaf. Promise Old Tobb his ledger
+         back within a week. Take the ledger — and the <b>amulet</b>. Hear a rumour. Sleep at the Lantern.</p>
+    </div>
+    <div class="why"><b>Tests:</b> your write policy's junk rate, and whether two folds keep the inventory, the
+      names and the promise. Max prompt should stop climbing.</div>
+  </div>
+  <div class="card c2">
+    <div class="hd"><span>Night 2 · 30 days ago</span><span class="pill">quiz + 16 turns</span></div>
+    <div class="bd">
+      <p><b>Quiz on night 1, from an empty short-term memory.</b> Then: the ledger goes back (promise kept).
+         The forge burns. <b>Marra dies.</b> Dax keeps her hammer. Mirra is fine; buy rope. The bridge is gone;
+         meet Sela the ferrywoman. Swear to find who started the fire.</p>
+    </div>
+    <div class="why"><b>Tests:</b> cross-restart recall; <b>supersede</b> — alive→dead, promised→kept, standing→burned;
+      and <b>Marra ≠ Mirra</b> when the player asks "is Mirra all right?"</div>
+  </div>
+  <div class="card c3">
+    <div class="hd"><span>Night 3 · today</span><span class="pill">quiz + 15 turns</span></div>
+    <div class="bd">
+      <p><b>Quiz on nights 1–2.</b> Then the player: <i>"Retcon — we never took the amulet."</i> The runner calls
+         your <code>forget()</code>, then your <code>fold(drop=)</code>, then asks what Dax is carrying. Visit
+         Mirra, Tobb, Sela, Marra's grave. Recap the campaign.</p>
+    </div>
+    <div class="why"><b>This is the project.</b> Forget with proof in three places — the store, tonight's summary,
+      the very next answer. Decay on a month-old rumour. Citations by night.</div>
+  </div>
+</div>
+
+<!-- ================= 3 ================= -->
+<h2>3 · Where your code sits</h2>
+
+<p>The game master is given. Every turn it calls eight things that do not exist yet.</p>
+
+<svg viewBox="0 0 1000 330" role="img" aria-label="The turn loop with the student's eight functions">
+  <rect x="15" y="40" width="120" height="60" rx="10" fill="#fff" stroke="#12314f" stroke-width="2.5"/>
+  <text x="75" y="75" font-size="14" font-weight="800" text-anchor="middle" fill="#12314f">player line</text>
+  <line x1="135" y1="70" x2="165" y2="70" stroke="#12314f" stroke-width="2.5" marker-end="url(#a)"/>
+
+  <polygon points="165,70 235,40 305,70 235,100" fill="#eaf7f0" stroke="#1a7f4b" stroke-width="2.5"/>
+  <text x="235" y="66" font-size="12" font-weight="800" text-anchor="middle" fill="#1a7f4b">preferences()</text>
+  <text x="235" y="82" font-size="10.5" text-anchor="middle" fill="#2c6b4f">always loaded</text>
+  <line x1="305" y1="70" x2="330" y2="70" stroke="#12314f" stroke-width="2.5" marker-end="url(#a)"/>
+
+  <polygon points="330,70 400,40 470,70 400,100" fill="#eaf7f0" stroke="#1a7f4b" stroke-width="2.5"/>
+  <text x="400" y="66" font-size="12" font-weight="800" text-anchor="middle" fill="#1a7f4b">recall()</text>
+  <text x="400" y="82" font-size="10.5" text-anchor="middle" fill="#2c6b4f">top-k, cited</text>
+  <line x1="470" y1="70" x2="495" y2="70" stroke="#12314f" stroke-width="2.5" marker-end="url(#a)"/>
+
+  <polygon points="495,70 565,40 635,70 565,100" fill="#eaf4fd" stroke="#0b6bcb" stroke-width="2.5"/>
+  <text x="565" y="66" font-size="12" font-weight="800" text-anchor="middle" fill="#0b6bcb">context()</text>
+  <text x="565" y="82" font-size="10.5" text-anchor="middle" fill="#12314f">summary + turns</text>
+  <line x1="635" y1="70" x2="660" y2="70" stroke="#12314f" stroke-width="2.5" marker-end="url(#a)"/>
+
+  <rect x="660" y="40" width="140" height="60" rx="10" fill="#fff" stroke="#12314f" stroke-width="2.5"/>
+  <text x="730" y="64" font-size="14" font-weight="800" text-anchor="middle" fill="#12314f">the model</text>
+  <text x="730" y="84" font-size="11.5" text-anchor="middle" fill="#5b6b7c">prompt size printed</text>
+  <line x1="800" y1="70" x2="830" y2="70" stroke="#12314f" stroke-width="2.5" marker-end="url(#a)"/>
+  <rect x="830" y="40" width="155" height="60" rx="10" fill="#fff" stroke="#12314f" stroke-width="2.5"/>
+  <text x="907" y="75" font-size="14" font-weight="800" text-anchor="middle" fill="#12314f">GM reply</text>
+
+  <!-- after the reply -->
+  <path d="M907 100 L907 150 L565 150" fill="none" stroke="#12314f" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#a)"/>
+  <text x="740" y="142" font-size="12" font-weight="700" text-anchor="middle" fill="#5b6b7c">after every reply</text>
+
+  <polygon points="495,180 565,150 635,180 565,210" fill="#eaf7f0" stroke="#1a7f4b" stroke-width="2.5"/>
+  <text x="565" y="176" font-size="12" font-weight="800" text-anchor="middle" fill="#1a7f4b">extract()</text>
+  <text x="565" y="192" font-size="10.5" text-anchor="middle" fill="#2c6b4f">the write policy</text>
+  <line x1="495" y1="180" x2="470" y2="180" stroke="#12314f" stroke-width="2.5" marker-end="url(#a)"/>
+
+  <polygon points="330,180 400,150 470,180 400,210" fill="#eaf7f0" stroke="#1a7f4b" stroke-width="2.5"/>
+  <text x="400" y="176" font-size="12" font-weight="800" text-anchor="middle" fill="#1a7f4b">remember()</text>
+  <text x="400" y="192" font-size="10.5" text-anchor="middle" fill="#2c6b4f">supersede</text>
+  <line x1="330" y1="180" x2="305" y2="180" stroke="#12314f" stroke-width="2.5" marker-end="url(#a)"/>
+
+  <polygon points="165,180 235,150 305,180 235,210" fill="#eaf4fd" stroke="#0b6bcb" stroke-width="2.5"/>
+  <text x="235" y="176" font-size="12" font-weight="800" text-anchor="middle" fill="#0b6bcb">should_fold()</text>
+  <text x="235" y="192" font-size="10.5" text-anchor="middle" fill="#12314f">over budget?</text>
+  <line x1="165" y1="180" x2="135" y2="180" stroke="#0b6bcb" stroke-width="2.5" marker-end="url(#ab)"/>
+  <polygon points="15,180 75,150 135,180 75,210" fill="#eaf4fd" stroke="#0b6bcb" stroke-width="2.5"/>
+  <text x="75" y="176" font-size="12" font-weight="800" text-anchor="middle" fill="#0b6bcb">fold()</text>
+  <text x="75" y="192" font-size="10.5" text-anchor="middle" fill="#12314f">summarise</text>
+
+  <rect x="15" y="240" width="970" height="76" rx="9" fill="#fdf6e3" stroke="#b7791f" stroke-width="2"/>
+  <text x="500" y="264" font-size="13.5" font-weight="800" text-anchor="middle" fill="#b7791f">
+    On the retcon, the runner calls two more of yours, in this order:
+  </text>
+  <text x="500" y="284" font-size="13.5" text-anchor="middle" fill="#8c5a10">
+    <tspan font-weight="800" fill="#1a7f4b">forget("amulet")</tspan> — every row, then count what is left — then
+    <tspan font-weight="800" fill="#0b6bcb">fold(drop="amulet")</tspan> — rewrite tonight's summary without it.
+  </text>
+  <text x="500" y="304" font-size="12.5" text-anchor="middle" fill="#8c5a10">
+    Green = long-term (disk). Blue = short-term (the prompt). Eight functions. One file.
+  </text>
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#12314f"/></marker>
+    <marker id="ab" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#0b6bcb"/></marker>
+  </defs>
+</svg>
+
+<!-- ================= 4 ================= -->
+<h2>4 · What you actually change</h2>
+
+<table>
+  <tr><th>File</th><th></th><th>What it is</th></tr>
+  <tr><td><code>campaign_memory_starter.py</code></td><td><span class="tag t-todo">8 TODOs</span></td>
+      <td><b>Copy to <code>campaign_memory.py</code>. The only file you edit.</b> Two classes, five policy numbers.</td></tr>
+  <tr><td><code>verify_memory.py</code></td><td><span class="tag t-given">GIVEN</span></td>
+      <td>17 checks on a throwaway store, four of them a model call. Run before a game night.</td></tr>
+  <tr><td><code>run_campaign.py</code></td><td><span class="tag t-given">GIVEN</span></td>
+      <td>One night per process. Quiz, play, retcon, receipt. <code>--goldfish</code>, <code>--quiz-only</code>, <code>--play</code>.</td></tr>
+  <tr><td><code>gm_base.py</code></td><td><span class="tag t-given">GIVEN</span></td>
+      <td>The game master and the quiz grader. Read how it builds the prompt. Do not edit.</td></tr>
+  <tr><td><code>world/</code></td><td><span class="tag t-given">GIVEN</span></td>
+      <td>The Hollow's canon, three scripted nights, two quizzes with answer keys.</td></tr>
+  <tr><td><code>README.md</code></td><td><span class="tag t-given">GIVEN</span></td>
+      <td>The full brief: six traps, the Stuck table, the three questions.</td></tr>
+</table>
+
+<div class="step"><div class="num">1</div><div class="bd">
+  <h3 style="margin-top:2px">Set up and fail correctly</h3>
+  <pre><code>cd Module-06/bridge-project
+../.venv/bin/python -m pip install -r requirements.txt
+cp campaign_memory_starter.py campaign_memory.py
+../.venv/bin/python verify_memory.py        <span class="dim"># fails on TODO 1. Good.</span></code></pre>
+</div></div>
+
+<div class="step"><div class="num">2</div><div class="bd">
+  <h3 style="margin-top:2px">Short-term · TODOs 1–3 <span class="tag t-todo">budget · fold · context</span></h3>
+  <p>A token budget, not a turn count. A fold prompt that names what must survive — the night-2 quiz will tell
+     you what you forgot. A <code>drop</code> argument for the retcon.</p>
+  <div class="box warn">The lab folded every six turns and the line still climbed. Here the receipt prints
+     <b>max prompt per night</b>. Yours should stop rising.</div>
+</div></div>
+
+<div class="step"><div class="num">3</div><div class="bd">
+  <h3 style="margin-top:2px">Long-term · TODOs 4–7 <span class="tag t-todo">extract · remember · recall · forget</span></h3>
+  <p>A model turns each exchange into typed facts — or into nothing. Supersede when the world changes; keep the
+     old row, dated. Recall filters <i>active</i> in the query, floors, decays only events, checks who is who, and
+     does not let five rows about Mirra crowd out the one about what you bought from her.</p>
+  <div class="box ai"><b>Try this first.</b> Write <code>recall()</code> with just the floor. Run night 2 and watch turn 7,
+     <i>"Is Mirra all right?"</i>. Count the Marra rows in the prompt. Then add the identity check.</div>
+</div></div>
+
+<div class="step"><div class="num">4</div><div class="bd">
+  <h3 style="margin-top:2px">Play</h3>
+  <pre><code>../.venv/bin/python run_campaign.py --night 1
+../.venv/bin/python run_campaign.py --night 2      <span class="dim"># new process: quiz, then play</span>
+../.venv/bin/python run_campaign.py --night 3      <span class="dim"># new process: quiz, retcon, play</span>
+../.venv/bin/python run_campaign.py --night 2 --goldfish
+../.venv/bin/python run_campaign.py --night 3 --goldfish</code></pre>
+  <p>About forty model calls and three minutes a night. Then <code>--play</code> and see how long it stays in character.</p>
+</div></div>
+
+<!-- ================= 5 ================= -->
+<h2>5 · What "done" looks like</h2>
+
+<p>The reference, 20 Sep 2026. Your digits will differ; the shape will not.</p>
+
+<pre><code>MEMORY GAME MASTER
+night  as of       turns folds max prompt    area    quiz facts stored model calls
+    1  2026-08-14     18     2      2,199  29,371       -           27          38
+    2  2026-08-21     16     2      2,367  27,392    9/10           26          44
+    3  2026-09-20     15     2      2,385  26,511   10/10           30          42
+
+GOLDFISH GAME MASTER
+night  as of       turns folds max prompt    area    quiz facts stored model calls
+    2  2026-08-21     16     0      3,285  33,250    2/10            0          26
+    3  2026-09-20     15     0      2,727  26,679    4/10            0          25
+
+<span class="ok">retcon 'amulet' (night 3): 3 rows deleted, 0 remaining; summary mentions it after re-fold: no; GM's next answer mentions it: no</span></code></pre>
+
+<p>Read across. Two folds a night and a max prompt that does not climb, against a goldfish with none and
+   3,285. A quiz the goldfish cannot pass. A retcon gone in three places.</p>
+
+<div class="box good"><b>Night 3, question 1 and 2, from the reference:</b>
+<pre><code>ok    Is Marra the smith alive?      -> No, Marra the smith is dead. Her passing has left a notable
+                                        absence in the village, and many miss her warm presence.
+ok    Is Mirra the herbalist alive?  -> Yes, Mirra is alive and continues to run the green door
+                                        herbalist's shop, though she is shaken by the news of Marra's passing.</code></pre>
+One letter apart. One is dead. The canon still says she is alive, and the goldfish says so. That is supersede
+and identity in two lines - from an empty short-term memory, in a new process.</div>
+
+<div class="box bad"><b>And what "not done" looks like</b> (illustrative, not a captured run). Rows deleted, summary untouched:
+<pre><code><span class="err">retcon 'amulet' (night 3): 3 rows deleted, 0 remaining; summary mentions it after re-fold: YES &lt;- not gone</span>
+you > Remind me: what exactly is Dax carrying right now?
+GM  > Dax carries Marra's hammer, a coil of rope, a pouch of feverleaf... and the Tidewater amulet.</code></pre>
+The store is clean and the game master still remembers. Forgetting is two policies, not one.</div>
+
+<h3>Submit on GitHub</h3>
+<ol>
+  <li><code>campaign_memory.py</code></li>
+  <li><code>out/RECEIPT.txt</code>, untouched, both game masters on it</li>
+  <li><code>out/quiz-night3.md</code> and <code>out/transcript-night3.md</code></li>
+  <li><code>NOTES.md</code> — your fold and what it lost first; Marra and Mirra and the line that keeps them apart;
+      the retcon's three checks and which was hardest. <b>Measured, with the receipt line next to each claim.</b></li>
+</ol>
+<p style="color:var(--mut);font-size:14.5px">Do not attach <code>.env</code> or <code>memory_store/</code>.</p>
+
+<div class="box good"><b>Then, Module 7.</b> The stretch splits the game master into narrator, rules-keeper and
+NPC-voice, sharing one store through three <code>where</code> filters. Write the paragraph about what each role may
+see. That paragraph is the next session.</div>
+
+</main>
+</body>
+</html>

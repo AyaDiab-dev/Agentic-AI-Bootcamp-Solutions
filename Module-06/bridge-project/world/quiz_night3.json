@@ -1,0 +1,96 @@
+{
+  "night": 3,
+  "about": "ten facts from nights 1 and 2. Several CHANGED on night 2 - the canon still says Marra is alive and the bridge stands",
+  "questions": [
+    {
+      "q": "Is Marra the smith alive? Answer yes or no, then one sentence.",
+      "accept": [
+        "no",
+        "dead",
+        "died",
+        "passed"
+      ],
+      "established": 2
+    },
+    {
+      "q": "Is Mirra the herbalist alive? Answer yes or no, then one sentence.",
+      "accept": [
+        "yes",
+        "alive",
+        "well"
+      ],
+      "established": 2
+    },
+    {
+      "q": "Did I give Old Tobb his ledger back? Yes or no.",
+      "accept": [
+        "yes",
+        "returned",
+        "gave"
+      ],
+      "established": 2
+    },
+    {
+      "q": "Is the toll bridge still standing? Yes or no.",
+      "accept": [
+        "no",
+        "burned",
+        "burnt",
+        "gone",
+        "destroyed"
+      ],
+      "established": 2
+    },
+    {
+      "q": "What did Dax keep from the forge after the fire?",
+      "accept": [
+        "hammer"
+      ],
+      "established": 2
+    },
+    {
+      "q": "On my second visit to the Hollow I bought something from Mirra after the fire. What was it?",
+      "accept": [
+        "rope"
+      ],
+      "established": 2
+    },
+    {
+      "q": "What is my dog called?",
+      "accept": [
+        "biscuit"
+      ],
+      "established": 1
+    },
+    {
+      "q": "What tone did I ask for? Quote me.",
+      "accept": [
+        "light",
+        "cosy",
+        "cozy",
+        "gore"
+      ],
+      "established": 1
+    },
+    {
+      "q": "How much did I pay Sela to cross on the ferry?",
+      "accept": [
+        "copper",
+        "one",
+        "1"
+      ],
+      "established": 2
+    },
+    {
+      "q": "What did Dax swear to do before bed last time?",
+      "accept": [
+        "fire",
+        "started",
+        "killed",
+        "arson",
+        "marra"
+      ],
+      "established": 2
+    }
+  ]
+}
