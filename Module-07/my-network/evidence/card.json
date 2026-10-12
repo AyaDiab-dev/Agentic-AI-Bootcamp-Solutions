@@ -1,0 +1,47 @@
+{
+  "name": "Bootcamp Policy Desk",
+  "description": "Remote specialist for documented bootcamp policies, deadlines, submissions, grading and instructor escalation.",
+  "version": "1.0.0",
+  "provider": {
+    "organization": "Bootcamp Help Desk",
+    "url": "https://example.com"
+  },
+  "supportedInterfaces": [
+    {
+      "url": "http://127.0.0.1:9999/",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "defaultInputModes": [
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "text/plain"
+  ],
+  "skills": [
+    {
+      "id": "bootcamp-policy",
+      "name": "Bootcamp Policy Support",
+      "description": "Explain documented rules; escalate unverified deadlines, extensions, grading and submission decisions.",
+      "tags": [
+        "policy",
+        "deadlines",
+        "extensions",
+        "submissions",
+        "grading",
+        "project-requirements",
+        "submission-checklist",
+        "escalation"
+      ],
+      "examples": [
+        "I was sick, can I submit on Monday?",
+        "How is Module 07 graded?"
+      ]
+    }
+  ]
+}
